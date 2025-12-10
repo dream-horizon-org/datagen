@@ -91,7 +91,7 @@ func codegenModel(parsed *DatagenParsed, dirPath string) error {
 		"metadata":         generateMetadataSection,
 		"base_struct":      generateBaseStruct,
 		"generator_struct": generateGeneratorStruct,
-		"serialiser_funcs": generateSerialiserFunc,
+		"serialiser_func":  generateSerialiserFunc,
 		"data_holder":      generateDataHolderStruct,
 		"generator_funcs":  generateGeneratorFuncs,
 		"gen_function":     generateGenFunction,

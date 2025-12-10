@@ -113,29 +113,31 @@ func TestConsumeString(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	testExpr := []struct {
-		name              string
-		input             string
-		expectedMetadata  *codegen.Metadata
-		expectedModelName string
-		expectedFilepath  string
-		expectedFields    bool
-		expectedMisc      bool
-		expectedGenFuncs  bool
-		expectedCalls     bool
-		fail              bool
-		errStr            string
+		name               string
+		input              string
+		expectedMetadata   *codegen.Metadata
+		expectedModelName  string
+		expectedFilepath   string
+		expectedFields     bool
+		expectedMisc       bool
+		expectedGenFuncs   bool
+		expectedCalls      bool
+		expectedSerialiser bool
+		fail               bool
+		errStr             string
 	}{
 		{
-			name:              "empty model",
-			input:             "model empty {}",
-			expectedMetadata:  nil,
-			expectedModelName: "empty",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			name:               "empty model",
+			input:              "model empty {}",
+			expectedMetadata:   nil,
+			expectedModelName:  "empty",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with fields only",
@@ -145,14 +147,15 @@ func TestParse(t *testing.T) {
     age() int
   }
 }`,
-			expectedMetadata:  nil,
-			expectedModelName: "user",
-			expectedFilepath:  "test.dg",
-			expectedFields:    true,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedMetadata:   nil,
+			expectedModelName:  "user",
+			expectedFilepath:   "test.dg",
+			expectedFields:     true,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with metadata count",
@@ -165,13 +168,14 @@ func TestParse(t *testing.T) {
 				Count: 100,
 				Tags:  map[string]string{},
 			},
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with metadata tags",
@@ -189,13 +193,14 @@ func TestParse(t *testing.T) {
 					"team":    "backend",
 				},
 			},
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with misc section",
@@ -207,14 +212,15 @@ func TestParse(t *testing.T) {
     }
   }
 }`,
-			expectedMetadata:  nil,
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      true,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedMetadata:   nil,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       true,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with gens section",
@@ -225,14 +231,15 @@ func TestParse(t *testing.T) {
     }
   }
 }`,
-			expectedMetadata:  nil,
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      false,
-			expectedGenFuncs:  true,
-			expectedCalls:     false,
-			fail:              false,
+			expectedMetadata:   nil,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   true,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with calls section",
@@ -244,14 +251,15 @@ func TestParse(t *testing.T) {
     name()
   }
 }`,
-			expectedMetadata:  nil,
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    true,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     true,
-			fail:              false,
+			expectedMetadata:   nil,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     true,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      true,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with comments",
@@ -262,14 +270,15 @@ model test {
     name() string // inline comment
   }
 }`,
-			expectedMetadata:  nil,
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    true,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedMetadata:   nil,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     true,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with metadata count and tags",
@@ -287,13 +296,14 @@ model test {
 					"service": "test",
 				},
 			},
-			expectedModelName: "test",
-			expectedFilepath:  "test.dg",
-			expectedFields:    false,
-			expectedMisc:      false,
-			expectedGenFuncs:  false,
-			expectedCalls:     false,
-			fail:              false,
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
 		},
 		{
 			name: "model with all sections",
@@ -323,6 +333,10 @@ model test {
     id()
     name()
   }
+
+  serialiser {
+    return []byte{}
+  }
 }`,
 			expectedMetadata: &codegen.Metadata{
 				Count: 42,
@@ -330,13 +344,14 @@ model test {
 					"key": "value",
 				},
 			},
-			expectedModelName: "complete",
-			expectedFilepath:  "test.dg",
-			expectedFields:    true,
-			expectedMisc:      true,
-			expectedGenFuncs:  true,
-			expectedCalls:     true,
-			fail:              false,
+			expectedModelName:  "complete",
+			expectedFilepath:   "test.dg",
+			expectedFields:     true,
+			expectedMisc:       true,
+			expectedGenFuncs:   true,
+			expectedCalls:      true,
+			expectedSerialiser: true,
+			fail:               false,
 		},
 		{
 			name:   "missing model keyword",
@@ -456,6 +471,7 @@ model test {
 			assert.Equal(t, tt.expectedMisc, got.Misc != "", "Misc presence mismatch")
 			assert.Equal(t, tt.expectedGenFuncs, len(got.GenFuns) > 0, "GenFuns presence mismatch")
 			assert.Equal(t, tt.expectedCalls, len(got.Calls) > 0, "Calls presence mismatch")
+			assert.Equal(t, tt.expectedSerialiser, got.SerialiserFunc != nil, "Serialiser presence mismatch")
 		})
 	}
 }
