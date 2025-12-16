@@ -155,6 +155,16 @@ func codegenModel(parsed *DatagenParsed, dirPath string) error {
 		return fmt.Errorf("failed to generate Kafka sink file\n  model: %s\n  cause: %w", parsed.FullyQualifiedModelName, err)
 	}
 
+	if err := os.MkdirAll(filepath.Join(modelDir, "protos"), 0o750); err != nil {
+		return err
+	}
+	if parsed.Metadata != nil && len(parsed.Metadata.Protofile) > 0 {
+		protoPath := filepath.Join(modelDir, fmt.Sprintf("protos/%s.proto", parsed.FullyQualifiedModelName))
+		if err := os.WriteFile(protoPath, parsed.Metadata.Protofile, 0o600); err != nil {
+			return fmt.Errorf("failed to write protofile\n  path: %s\n  cause: %w", protoPath, err)
+		}
+	}
+
 	return nil
 }
 

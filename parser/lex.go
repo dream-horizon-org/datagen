@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"go/ast"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"unicode"
@@ -21,6 +23,7 @@ type MetadataEntry int
 const (
 	Count MetadataEntry = iota
 	Tags
+	Protofile
 	MetadataEof
 )
 
@@ -203,7 +206,18 @@ func lexMetadataColon(l *lex) (stateFn, int) {
 		return lexLBrace, COLON
 	}
 
+	if l.metadataEntry == Protofile {
+		return lexMetadataProtofilePath, COLON
+	}
+
 	return l.error("invalid metadata field")
+}
+
+func lexMetadataProtofilePath(l *lex) (stateFn, int) {
+	val := l.consumeString()
+	val = strings.Trim(val, `"'`)
+	l.lval.str = val
+	return lexMetadataBody, PROTOFILE_PATH
 }
 
 func lexMetadataBody(l *lex) (stateFn, int) {
@@ -220,6 +234,11 @@ func lexMetadataBody(l *lex) (stateFn, int) {
 	if val == "tags" {
 		l.metadataEntry = Tags
 		return lexMetadataColon, TAGS
+	}
+
+	if val == "protofile" {
+		l.metadataEntry = Protofile
+		return lexMetadataColon, PROTOFILE
 	}
 
 	if val != "" {
@@ -419,6 +438,14 @@ func (l *lex) parse_calls(s string) []*ast.CallExpr {
 		l.error("could not parse calls: %s", err)
 	}
 	return calls
+}
+
+func (l *lex) slurp_protofile(filePath string) []byte {
+	protoContent, err := os.ReadFile(filepath.Clean(filePath))
+	if err != nil {
+		l.error("failed to read proto file: %w", err)
+	}
+	return protoContent
 }
 
 func (l *lex) add_gen_fn(name, args, body string) {

@@ -15,6 +15,7 @@ type yySymType struct {
 	fields         *ast.FieldList
 	misc           string
 	tags           map[string]string
+	protofile      string
 	genFuns        []*codegen.GenFn
 	serialiserFunc *codegen.SerialiserFunc
 	calls          []*ast.CallExpr
@@ -33,20 +34,22 @@ const FN = 57352
 const COUNT = 57353
 const TAGS = 57354
 const SERIALISER_FUNC = 57355
-const L_BRACE = 57356
-const R_BRACE = 57357
-const L_PARENTHESIS = 57358
-const R_PARENTHESIS = 57359
-const COLON = 57360
-const COUNT_INT = 57361
-const MODEL_NAME = 57362
-const FN_NAME = 57363
-const FN_ARGS = 57364
-const FN_BODY = 57365
-const FIELDS_BODY = 57366
-const MISC_BODY = 57367
-const TAGS_BODY = 57368
-const CALLS_BODY = 57369
+const PROTOFILE = 57356
+const L_BRACE = 57357
+const R_BRACE = 57358
+const L_PARENTHESIS = 57359
+const R_PARENTHESIS = 57360
+const COLON = 57361
+const COUNT_INT = 57362
+const MODEL_NAME = 57363
+const FN_NAME = 57364
+const FN_ARGS = 57365
+const FN_BODY = 57366
+const FIELDS_BODY = 57367
+const MISC_BODY = 57368
+const TAGS_BODY = 57369
+const CALLS_BODY = 57370
+const PROTOFILE_PATH = 57371
 
 var yyToknames = [...]string{
 	"$end",
@@ -62,6 +65,7 @@ var yyToknames = [...]string{
 	"COUNT",
 	"TAGS",
 	"SERIALISER_FUNC",
+	"PROTOFILE",
 	"L_BRACE",
 	"R_BRACE",
 	"L_PARENTHESIS",
@@ -76,6 +80,7 @@ var yyToknames = [...]string{
 	"MISC_BODY",
 	"TAGS_BODY",
 	"CALLS_BODY",
+	"PROTOFILE_PATH",
 }
 
 var yyStatenames = [...]string{}
@@ -92,63 +97,67 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 69
+const yyLast = 74
 
 var yyAct = [...]int8{
-	43, 36, 42, 61, 35, 33, 66, 45, 62, 55,
-	4, 57, 52, 51, 13, 14, 15, 17, 16, 6,
-	64, 59, 18, 67, 44, 63, 56, 20, 21, 22,
-	23, 24, 25, 54, 53, 48, 47, 46, 19, 49,
-	50, 65, 58, 31, 30, 29, 28, 27, 26, 5,
-	39, 40, 2, 1, 41, 60, 34, 32, 37, 10,
-	12, 11, 38, 9, 8, 7, 3, 0, 68,
+	45, 36, 63, 44, 66, 35, 33, 71, 47, 67,
+	59, 4, 61, 56, 55, 54, 69, 13, 14, 15,
+	17, 16, 6, 64, 72, 18, 68, 60, 46, 58,
+	20, 21, 22, 23, 24, 25, 57, 50, 49, 51,
+	52, 53, 40, 41, 48, 42, 19, 70, 62, 31,
+	30, 29, 28, 27, 26, 5, 2, 1, 43, 65,
+	34, 32, 37, 10, 12, 11, 39, 38, 9, 8,
+	7, 3, 0, 73,
 }
 
 var yyPact = [...]int16{
-	48, -1000, -10, 35, -1000, 9, 23, 9, 9, 9,
-	9, 9, 9, 34, 33, 32, 31, 30, 29, -1000,
-	-1000, -1000, -1000, -1000, -1000, -1000, -19, -21, 39, -25,
-	14, -16, 22, -1000, 21, -1000, 20, 39, 39, -5,
-	-6, 19, -1000, 18, -12, 11, -1000, -1000, -1000, -1000,
-	-1000, -8, 28, -1000, -1000, 5, -1000, -1000, -23, -14,
-	10, -1000, 3, -1000, 27, -17, 8, 14, -1000,
+	52, -1000, -10, 40, -1000, 12, 30, 12, 12, 12,
+	12, 12, 12, 39, 38, 37, 36, 35, 34, -1000,
+	-1000, -1000, -1000, -1000, -1000, -1000, -19, -21, 31, -25,
+	18, -16, 28, -1000, 22, -1000, 21, 31, 31, 31,
+	-4, -5, -6, 20, -1000, 13, -12, 11, -1000, -1000,
+	-1000, -1000, -1000, -1000, -8, 33, -27, -1000, -1000, 6,
+	-1000, -1000, -23, -1000, -14, 10, -1000, -2, -1000, 32,
+	-17, 8, 18, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 66, 19, 65, 64, 63, 1, 62, 61, 0,
-	60, 59, 58, 57, 56, 55, 54, 53,
+	0, 71, 22, 70, 69, 68, 1, 67, 66, 65,
+	0, 64, 63, 62, 61, 60, 59, 58, 57,
 }
 
 var yyR1 = [...]int8{
-	0, 17, 1, 2, 2, 2, 2, 2, 2, 2,
-	3, 13, 4, 14, 5, 6, 6, 6, 12, 7,
-	15, 11, 16, 8, 9, 9, 10,
+	0, 18, 1, 2, 2, 2, 2, 2, 2, 2,
+	3, 14, 4, 15, 5, 6, 6, 6, 6, 13,
+	7, 16, 8, 12, 17, 9, 10, 10, 11,
 }
 
 var yyR2 = [...]int8{
 	0, 5, 1, 2, 2, 2, 2, 2, 2, 0,
-	4, 1, 4, 1, 4, 2, 2, 0, 3, 5,
-	1, 4, 1, 4, 9, 0, 4,
+	4, 1, 4, 1, 4, 2, 2, 2, 0, 3,
+	5, 1, 3, 4, 1, 4, 9, 0, 4,
 }
 
 var yyChk = [...]int16{
-	-1000, -17, 4, -1, 20, 14, -2, -3, -4, -5,
-	-11, -8, -10, 5, 6, 7, 9, 8, 13, 15,
-	-2, -2, -2, -2, -2, -2, 14, 14, 14, 14,
-	14, 14, -13, 24, -14, 25, -6, -12, -7, 11,
-	12, -16, 27, -9, 10, 23, 15, 15, 15, -6,
-	-6, 18, 18, 15, 15, 21, 15, 19, 14, 16,
-	-15, 26, 22, 15, 17, 14, 23, 15, -9,
+	-1000, -18, 4, -1, 21, 15, -2, -3, -4, -5,
+	-12, -9, -11, 5, 6, 7, 9, 8, 13, 16,
+	-2, -2, -2, -2, -2, -2, 15, 15, 15, 15,
+	15, 15, -14, 25, -15, 26, -6, -13, -7, -8,
+	11, 12, 14, -17, 28, -10, 10, 24, 16, 16,
+	16, -6, -6, -6, 19, 19, 19, 16, 16, 22,
+	16, 20, 15, 29, 17, -16, 27, 23, 16, 18,
+	15, 24, 16, -10,
 }
 
 var yyDef = [...]int8{
 	0, -2, 0, 0, 2, 9, 0, 9, 9, 9,
 	9, 9, 9, 0, 0, 0, 0, 0, 0, 1,
-	3, 4, 5, 6, 7, 8, 0, 0, 17, 0,
-	25, 0, 0, 11, 0, 13, 0, 17, 17, 0,
-	0, 0, 22, 0, 0, 0, 10, 12, 14, 15,
-	16, 0, 0, 21, 23, 0, 26, 18, 0, 0,
-	0, 20, 0, 19, 0, 0, 0, 25, 24,
+	3, 4, 5, 6, 7, 8, 0, 0, 18, 0,
+	27, 0, 0, 11, 0, 13, 0, 18, 18, 18,
+	0, 0, 0, 0, 24, 0, 0, 0, 10, 12,
+	14, 15, 16, 17, 0, 0, 0, 23, 25, 0,
+	28, 19, 0, 22, 0, 0, 21, 0, 20, 0,
+	0, 0, 27, 26,
 }
 
 var yyTok1 = [...]int8{
@@ -158,7 +167,7 @@ var yyTok1 = [...]int8{
 var yyTok2 = [...]int8{
 	2, 3, 4, 5, 6, 7, 8, 9, 10, 11,
 	12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-	22, 23, 24, 25, 26, 27,
+	22, 23, 24, 25, 26, 27, 28, 29,
 }
 
 var yyTok3 = [...]int8{
@@ -590,51 +599,65 @@ yydefault:
 			yyVAL.metadata = yyDollar[2].metadata
 		}
 	case 17:
+		yyDollar = yyS[yypt-2 : yypt+1]
+		{
+			if yyDollar[2].metadata == nil {
+				yyDollar[2].metadata = &codegen.Metadata{}
+			}
+			yyDollar[2].metadata.Protofile = yylex.(*lex).slurp_protofile(yyDollar[1].protofile)
+			yyVAL.metadata = yyDollar[2].metadata
+		}
+	case 18:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 		}
-	case 18:
+	case 19:
 		yyDollar = yyS[yypt-3 : yypt+1]
 		{
 			yyVAL.count = yyDollar[3].count
 		}
-	case 19:
+	case 20:
 		yyDollar = yyS[yypt-5 : yypt+1]
 		{
 			yyVAL.tags = yylex.(*lex).parse_tags(yyDollar[4].str)
 		}
-	case 20:
+	case 21:
 		yyDollar = yyS[yypt-1 : yypt+1]
 		{
 			yyVAL.str = yyDollar[1].str
-		}
-	case 21:
-		yyDollar = yyS[yypt-4 : yypt+1]
-		{
-			yyVAL.calls = yylex.(*lex).parse_calls(yyDollar[3].str)
 		}
 	case 22:
-		yyDollar = yyS[yypt-1 : yypt+1]
+		yyDollar = yyS[yypt-3 : yypt+1]
 		{
-			yyVAL.str = yyDollar[1].str
+			yyVAL.protofile = yyDollar[3].str
 		}
 	case 23:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
-			yyVAL.genFuns = yyDollar[3].genFuns
+			yyVAL.calls = yylex.(*lex).parse_calls(yyDollar[3].str)
 		}
 	case 24:
+		yyDollar = yyS[yypt-1 : yypt+1]
+		{
+			yyVAL.str = yyDollar[1].str
+		}
+	case 25:
+		yyDollar = yyS[yypt-4 : yypt+1]
+		{
+			yyVAL.genFuns = yyDollar[3].genFuns
+		}
+	case 26:
 		yyDollar = yyS[yypt-9 : yypt+1]
 		{
 			yylex.(*lex).add_gen_fn(yyDollar[2].str, yyDollar[4].str, yyDollar[7].str)
 			yyVAL.genFuns = yylex.(*lex).parsed.GenFuns
 		}
-	case 25:
+	case 27:
 		yyDollar = yyS[yypt-0 : yypt+1]
 		{
 			yyVAL.genFuns = yylex.(*lex).parsed.GenFuns
 		}
-	case 26:
+	case 28:
 		yyDollar = yyS[yypt-4 : yypt+1]
 		{
 			yyVAL.serialiserFunc = yylex.(*lex).add_serialiser_fn(yyDollar[3].str)
