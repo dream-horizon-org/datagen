@@ -354,6 +354,18 @@ model test {
 			fail:               false,
 		},
 		{
+			name:               "invalid serialisers section",
+			input:              "model complete { serialiser {} }",
+			expectedModelName:  "complete",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: true,
+			fail:               false,
+		},
+		{
 			name:   "missing model keyword",
 			input:  "user {}",
 			fail:   true,
@@ -436,6 +448,12 @@ model test {
 			input:  "model test { fields { {",
 			fail:   true,
 			errStr: "invalid fields body incomplete body",
+		},
+		{
+			name:   "invalid serialisers section",
+			input:  "model test { serialiser ",
+			fail:   true,
+			errStr: "expected '{', got '",
 		},
 	}
 
