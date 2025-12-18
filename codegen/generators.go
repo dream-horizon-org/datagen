@@ -37,7 +37,8 @@ const (
 	tmplBaseStruct        = "templates/base_struct.tmpl"
 	tmplGenerator         = "templates/generator_struct.tmpl"
 	tmplDataHolder        = "templates/data_holder_struct.tmpl"
-	tmplWrapperFunc       = "templates/wrapper_func.tmpl"
+	tmplGenWrapperFunc    = "templates/wrapper_func.tmpl"
+	tmplSerialiserFunc    = "templates/serialiser_func.tmpl"
 	tmplGenFunction       = "templates/gen_function.tmpl"
 	tmplInitFunction      = "templates/init_function.tmpl"
 	tmplCSV               = "templates/csv_function.tmpl"
@@ -48,6 +49,9 @@ const (
 	tmplPostgresSink      = "templates/load_postgres.tmpl"
 	tmplPostgresInit      = "templates/init_postgres.tmpl"
 	tmplSinkPostgresModel = "templates/sink_postgres_model.tmpl"
+	tmplKafkaSink         = "templates/load_kafka.tmpl"
+	tmplKafkaInit         = "templates/init_kafka.tmpl"
+	tmplSinkKafkaModel    = "templates/sink_kafka_model.tmpl"
 )
 
 type SectionGenerator func(d *DatagenParsed) (string, error)
@@ -87,6 +91,7 @@ func codegenModel(parsed *DatagenParsed, dirPath string) error {
 		"metadata":         generateMetadataSection,
 		"base_struct":      generateBaseStruct,
 		"generator_struct": generateGeneratorStruct,
+		"serialiser_func":  generateSerialiserFunc,
 		"data_holder":      generateDataHolderStruct,
 		"generator_funcs":  generateGeneratorFuncs,
 		"gen_function":     generateGenFunction,
@@ -138,6 +143,16 @@ func codegenModel(parsed *DatagenParsed, dirPath string) error {
 	}
 	if err := parsed.generatePostgresSinkFile(modelDir); err != nil {
 		return fmt.Errorf("failed to generate Postgres sink file\n  model: %s\n  cause: %w", parsed.FullyQualifiedModelName, err)
+	}
+
+	if err := parsed.generateKafkaInitFile(modelDir); err != nil {
+		return fmt.Errorf("failed to generate Kafka init file\n  model: %s\n  cause: %w", parsed.FullyQualifiedModelName, err)
+	}
+	if err := parsed.generateKafkaLoadFile(modelDir); err != nil {
+		return fmt.Errorf("failed to generate Kafka load file\n  model: %s\n  cause: %w", parsed.FullyQualifiedModelName, err)
+	}
+	if err := parsed.generateKafkaSinkFile(modelDir); err != nil {
+		return fmt.Errorf("failed to generate Kafka sink file\n  model: %s\n  cause: %w", parsed.FullyQualifiedModelName, err)
 	}
 
 	return nil
@@ -256,9 +271,9 @@ func generateDataHolderStruct(d *DatagenParsed) (string, error) {
 }
 
 func generateGeneratorFuncs(d *DatagenParsed) (string, error) {
-	tmpl, err := template.ParseFS(templates, tmplWrapperFunc)
+	tmpl, err := template.ParseFS(templates, tmplGenWrapperFunc)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse template\n  template: %s\n  cause: %w", tmplWrapperFunc, err)
+		return "", fmt.Errorf("failed to parse template\n  template: %s\n  cause: %w", tmplGenWrapperFunc, err)
 	}
 
 	var buf bytes.Buffer
@@ -319,6 +334,36 @@ func generateGeneratorFuncs(d *DatagenParsed) (string, error) {
 		if err := tmpl.Execute(&buf, data); err != nil {
 			return "", fmt.Errorf("failed to generate wrapper function\n  model: %s\n  field: %s\n  cause: %w", d.FullyQualifiedModelName, fieldName, err)
 		}
+	}
+
+	return buf.String(), nil
+}
+
+func generateSerialiserFunc(d *DatagenParsed) (string, error) {
+	tmpl, err := template.ParseFS(templates, tmplSerialiserFunc)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse template\n  template: %s\n  cause: %w", tmplGenWrapperFunc, err)
+	}
+
+	var buf bytes.Buffer
+	fset := token.NewFileSet()
+
+	var bodyBuf bytes.Buffer
+	if d.SerialiserFunc != nil {
+		err := printer.Fprint(&bodyBuf, fset, d.SerialiserFunc.Body)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	data := serialiserFuncData{
+		ModelName:               d.ModelName,
+		FullyQualifiedModelName: d.FullyQualifiedModelName,
+		SerialiserFuncBody:      bodyBuf.String(),
+	}
+
+	if err := tmpl.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("failed to generate wrapper function\n  model: %s\n  cause: %w", d.FullyQualifiedModelName, err)
 	}
 
 	return buf.String(), nil
@@ -570,5 +615,51 @@ func generateSinkManagerFile(dirPath string, modelNameData *modelNameData) error
 		return fmt.Errorf("failed to write generated file\n  path: %s\n  cause: %w", sinkManagerPath, err)
 	}
 
+	return nil
+}
+
+// generateKafkaLoadFile renders templates/load_kafka.tmpl into <ModelName>_kafka.go
+func (d *DatagenParsed) generateKafkaLoadFile(modelDir string) error {
+	if len(getFieldData(d)) == 0 {
+		return nil
+	}
+
+	ib, err := renderFS(tmplKafkaSink, fieldsVars(d))
+	if err != nil {
+		return fmt.Errorf("failed to render template\n  template: %s\n  cause: %w", tmplKafkaSink, err)
+	}
+
+	outPath := filepath.Join(modelDir, fmt.Sprintf("%s_kafka.go", d.FullyQualifiedModelName))
+	if err := writeFormattedGoFile(outPath, []byte(ib)); err != nil {
+		return fmt.Errorf("failed to write generated file\n  path: %s\n  cause: %w", outPath, err)
+	}
+	return nil
+}
+
+// generateKafkaInitFile renders templates/init_kafka.tmpl into <ModelName>_init_kafka.go
+func (d *DatagenParsed) generateKafkaInitFile(modelDir string) error {
+	ib, err := renderFS(tmplKafkaInit, fieldsVars(d))
+	if err != nil {
+		return fmt.Errorf("failed to render template\n  template: %s\n  cause: %w", tmplKafkaInit, err)
+	}
+	initKafkaPath := filepath.Join(modelDir, fmt.Sprintf("%s_init_kafka.go", d.FullyQualifiedModelName))
+
+	if err := writeFormattedGoFile(initKafkaPath, []byte(ib)); err != nil {
+		return fmt.Errorf("failed to write generated file\n  path: %s\n  cause: %w", initKafkaPath, err)
+	}
+	return nil
+}
+
+// generateKafkaSinkFile renders templates/sink_kafka_model.tmpl into <ModelName>_sink_kafka.go
+func (d *DatagenParsed) generateKafkaSinkFile(modelDir string) error {
+	ib, err := renderFS(tmplSinkKafkaModel, fieldsVars(d))
+	if err != nil {
+		return fmt.Errorf("failed to render template\n  template: %s\n  cause: %w", tmplSinkKafkaModel, err)
+	}
+	sinkKafkaPath := filepath.Join(modelDir, fmt.Sprintf("%s_sink_kafka.go", d.FullyQualifiedModelName))
+
+	if err := writeFormattedGoFile(sinkKafkaPath, []byte(ib)); err != nil {
+		return fmt.Errorf("failed to write generated file\n  path: %s\n  cause: %w", sinkKafkaPath, err)
+	}
 	return nil
 }
