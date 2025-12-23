@@ -2,6 +2,7 @@
 target
 datagen
 cmd/datagenc/target/
+main
 
 # Binaries for programs and plugins
 *.exe

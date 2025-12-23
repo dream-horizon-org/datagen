@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"image"
 	"math"
@@ -172,7 +174,6 @@ func PhoneFormatted() string {
 func Username() string {
 	return gofakeit.Username()
 }
-
 
 func Password(opts PasswordOptions) string {
 	return gofakeit.Password(
@@ -644,6 +645,34 @@ func ErrorHTTPClient() error {
 }
 func ErrorHTTPServer() error {
 	return gofakeit.ErrorHTTPServer()
+}
+
+func ToJSONBytes(record __dgi_Record) []byte {
+	return []byte(record.ToJSON())
+}
+
+func ToXMLBytes(record __dgi_Record) []byte {
+	return []byte(record.ToXML())
+}
+
+func ToCSVBytes(record __dgi_Record, writeHeader bool) []byte {
+	var b bytes.Buffer
+	wr := csv.NewWriter(&b)
+
+	if writeHeader {
+		headers := record.CSVHeaders()
+		if err := wr.Write(headers); err != nil {
+			return nil
+		}
+	}
+
+	data := record.ToCSV()
+	if err := wr.Write(data); err != nil {
+		return nil
+	}
+
+	wr.Flush()
+	return b.Bytes()
 }
 
 var _ = json.Marshal

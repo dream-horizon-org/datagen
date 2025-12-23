@@ -52,6 +52,9 @@ datagen provides a comprehensive set of built-in functions for common data gener
 |                     | `Url()`                             | `string`                 | Random URL                                     |
 |                     | `HexColor()`                        | `string`                 | Random hex color                               |
 | **Conversion**      | `ToJSON(interface{})`                     | `string`                 | Convert to JSON string                         |
+|                     | `ToJSONBytes(__dgi_Record)`               | `[]byte`                 | Convert record to JSON bytes                    |
+|                     | `ToXMLBytes(__dgi_Record)`                | `[]byte`                 | Convert record to XML bytes                     |
+|                     | `ToCSVBytes(__dgi_Record, bool)`           | `[]byte`                 | Convert record to CSV bytes (with optional header) |
 | **Security**        | `Password(PasswordOptions)`               | `string`                 | Random password with options                   |
 | **Address**         | `AddressInfo()`                           | `string`                 | Random full address string                     |
 |                     | `AddressFull()`                           | `string`                 | Random full address (street, city, state, zip) |
