@@ -115,11 +115,12 @@ func TestConsumeString(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	tmpProtoFile, err := os.CreateTemp("", "example-*.proto")
-	if err != nil {
-		t.Fatal("Cannot create temporary proto file", err)
-	}
+	assert.NoError(t, err)
 
-	defer os.Remove(tmpProtoFile.Name())
+	defer func() {
+		err := os.Remove(tmpProtoFile.Name())
+		assert.NoError(t, err)
+	}()
 	if _, err := tmpProtoFile.Write([]byte("proto message")); err != nil {
 		t.Fatal("Failed to write to temporary file", err)
 	}
