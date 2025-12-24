@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"strings"
+	"embed"
 
 	"github.com/spf13/cobra"
 )
@@ -13,6 +14,9 @@ var (
 	flagVerbose bool
 	flagVersion bool
 )
+
+//go:embed protos
+var protofiles embed.FS
 
 func main() {
 	rootCmd := &cobra.Command{

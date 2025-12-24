@@ -1,6 +1,7 @@
 model pluto {
   metadata {
       count: 10
+      protofile: "./samples/pluto.proto"
       tags: {
           "service":  "pluto",
           "team_name":  "nimbus"
@@ -8,7 +9,7 @@ model pluto {
   }
 
   misc {
-    const Count = 1000000
+    const Count = 10000
   }
 
   fields {

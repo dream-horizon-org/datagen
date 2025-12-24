@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -112,6 +114,17 @@ func TestConsumeString(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	tmpProtoFile, err := os.CreateTemp("", "example-*.proto")
+	assert.NoError(t, err)
+
+	defer func() {
+		err := os.Remove(tmpProtoFile.Name())
+		assert.NoError(t, err)
+	}()
+	if _, err := tmpProtoFile.Write([]byte("proto message")); err != nil {
+		t.Fatal("Failed to write to temporary file", err)
+	}
+
 	testExpr := []struct {
 		name               string
 		input              string
@@ -192,6 +205,25 @@ func TestParse(t *testing.T) {
 					"service": "test",
 					"team":    "backend",
 				},
+			},
+			expectedModelName:  "test",
+			expectedFilepath:   "test.dg",
+			expectedFields:     false,
+			expectedMisc:       false,
+			expectedGenFuncs:   false,
+			expectedCalls:      false,
+			expectedSerialiser: false,
+			fail:               false,
+		},
+		{
+			name: "model with metadata protofile",
+			input: fmt.Sprintf(`model test {
+  metadata {
+    protofile: "%s"
+  }
+}`, tmpProtoFile.Name()),
+			expectedMetadata: &codegen.Metadata{
+				Protofile: []byte("proto message"),
 			},
 			expectedModelName:  "test",
 			expectedFilepath:   "test.dg",
@@ -483,6 +515,8 @@ model test {
 					assert.Equal(t, tt.expectedMetadata.Tags, got.Metadata.Tags,
 						"Metadata.Tags mismatch")
 				}
+				assert.Equal(t, tt.expectedMetadata.Protofile, got.Metadata.Protofile,
+					"Metadata.Protofile mismatch")
 			}
 
 			assert.Equal(t, tt.expectedFields, got.Fields != nil, "Fields presence mismatch")

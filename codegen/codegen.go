@@ -70,8 +70,9 @@ type DatagenParsed struct {
 }
 
 type Metadata struct {
-	Count int
-	Tags  map[string]string
+	Count     int
+	Tags      map[string]string
+	Protofile []byte
 }
 
 func getMetadata(d *DatagenParsed) Metadata {

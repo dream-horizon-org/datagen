@@ -180,6 +180,12 @@ import (
 
 	// unsafe
 	"unsafe"
+
+	"github.com/bufbuild/protocompile"
+	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/dynamicpb"
 )
 
 var (
@@ -462,6 +468,42 @@ func (e *__datagen_nested) CSVHeaders() []string {
 		"id",
 		"user",
 	}
+}
+
+func (e *__datagen_nested) EncodeViaProtobuf(message string) ([]byte, error) {
+	content, err := protofiles.ReadFile("protos/nested.proto")
+	if err != nil {
+		return nil, fmt.Errorf("failed to read proto file from templates: %w", err)
+	}
+
+	compiler := protocompile.Compiler{
+		Resolver: &protocompile.SourceResolver{
+			Accessor: protocompile.SourceAccessorFromMap(map[string]string{"nested.proto": string(content)}),
+		},
+	}
+
+	ctx := context.Background()
+	files, err := compiler.Compile(ctx, "nested.proto")
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse proto file: %w", err)
+	}
+
+	msgDesc := files[0].Messages().ByName(protoreflect.Name(message))
+	if msgDesc == nil {
+		return nil, fmt.Errorf("message %q not found in schema", message)
+	}
+
+	dynMsg := dynamicpb.NewMessage(msgDesc)
+
+	err = protojson.Unmarshal([]byte(e.ToJSON()), dynMsg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to map data to proto: %w", err)
+	}
+	finalBytes, err := proto.Marshal(dynMsg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal proto message: %w", err)
+	}
+	return finalBytes, nil
 }
 
 func (e *__datagen_nested) ToJSON() string {

@@ -48,10 +48,11 @@ func Sink_kafka___datagen_with_misc_data(modelName string, records []*__datagen_
 
 		totalSent += len(batch)
 
-		if config.Throttle > 0 && end < len(records) {
-			throttleDuration := time.Duration(config.Throttle) * time.Millisecond
-			slog.Debug(fmt.Sprintf("throttling %s between batches for %s", throttleDuration, modelName))
-			time.Sleep(throttleDuration)
+		if config.Throttle != "" && end < len(records) {
+			if throttleDuration, err := time.ParseDuration(config.Throttle); err == nil {
+				slog.Debug(fmt.Sprintf("throttling %s between batches for %s", throttleDuration, modelName))
+				time.Sleep(throttleDuration)
+			}
 		}
 	}
 

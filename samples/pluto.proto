@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message pluto {
+  int64 age = 1;
+  int64 next_page = 2;
+  string set_name = 3;
+}
