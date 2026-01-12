@@ -1,9 +1,9 @@
 %{
-package main
+package parser
 
 import (
 	  "go/ast"
-	  "github.com/ds-horizon/datagen/codegen"
+	  "github.com/dream-horizon-org/datagen/codegen"
 )
 %}
 
@@ -14,6 +14,7 @@ import (
     fields          *ast.FieldList
     misc            string
     tags            map[string]string
+    protofile       string
     genFuns         []*codegen.GenFn
     serialiserFunc  *codegen.SerialiserFunc
     calls           []*ast.CallExpr
@@ -25,14 +26,14 @@ import (
 /* ------------ Terminals (tokens) ------------ */
 
 /* Keywords */
-%token MODEL FIELDS MISC METADATA GEN_FNS CALLS FN COUNT TAGS GEN_FNS SERIALISER_FUNC
+%token MODEL FIELDS MISC METADATA GEN_FNS CALLS FN COUNT TAGS GEN_FNS SERIALISER_FUNC PROTOFILE
 
 /* Punctuators */
 %token L_BRACE R_BRACE L_PARENTHESIS R_PARENTHESIS COLON
 
 /* Literals / lexeme-carrying terminals */
 %token<count> COUNT_INT
-%token<str>   MODEL_NAME FN_NAME FN_ARGS FN_BODY FIELDS_BODY MISC_BODY TAGS_BODY CALLS_BODY
+%token<str>   MODEL_NAME FN_NAME FN_ARGS FN_BODY FIELDS_BODY MISC_BODY TAGS_BODY CALLS_BODY PROTOFILE_PATH
 
 /* ------------ Nonterminals (typed) ------------ */
 
@@ -43,13 +44,13 @@ import (
 %type<misc>      misc_section
 %type<metadata>  metadata_section metadata_body
 %type<tags>      tags_entry
+%type<protofile> protofile_entry
 %type<genFuns>   gen_fns_section gen_fns
 %type<serialiserFunc> serialiser_func_section
 %type<calls>     calls_section
 %type<count>     count_entry
 
 %type<str>       fields_body misc_body tags_body calls_body
-
 
 %start main
 
@@ -133,6 +134,14 @@ metadata_body: count_entry metadata_body
 		    $2.Tags = $1
 		    $$ = $2
  	        }
+              | protofile_entry metadata_body
+                {
+                  if $2 == nil {
+                    $2 = &codegen.Metadata{}
+                  }
+		  $2.Protofile = yylex.(*lex).slurp_protofile($1)
+                  $$ = $2
+                }
                | // empty
 	       {}
 
@@ -149,6 +158,12 @@ tags_entry: TAGS COLON L_BRACE tags_body R_BRACE
 
 tags_body: TAGS_BODY
 { $$ = $1 }
+
+// protofile
+protofile_entry: PROTOFILE COLON PROTOFILE_PATH
+{
+  $$ = $3
+}
 
 // calls
 calls_section: CALLS L_BRACE calls_body R_BRACE
