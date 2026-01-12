@@ -10,7 +10,7 @@ type __dgi_KafkaConfig struct {
 	IncludeKeyInMessage string   `json:"include_key_in_message,omitempty"`
 	BootstrapServers    []string `json:"bootstrap_servers"`
 	BatchSize           int      `json:"batch_size,omitempty"`
-	Throttle          int      `json:"throttle,omitempty"`
+	Throttle            string      `json:"throttle,omitempty"`
 }
 
 func (c *__dgi_KafkaConfig) Validate() error {
