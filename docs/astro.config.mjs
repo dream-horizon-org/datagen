@@ -72,6 +72,7 @@ export default defineConfig({
                 'sinks/overview',
                 'sinks/config',
                 'sinks/mysql',
+                'sinks/postgres',
               ],
             },
           ],
